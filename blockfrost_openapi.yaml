@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  version: 0.1.0
+  title: Blockfrost Cardano API
+  description: A curated set of Blockfrost endpoints for Cardano.
+servers:
+  - url: 'https://cardano-mainnet.blockfrost.io/api/v0'
+security:
+  - project_id: []
+paths:
+  /addresses/{address}:
+    get:
+      tags:
+        - Cardano » Addresses
+      summary: Get basic information for a specific address
+      operationId: get_address_info
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bech32 address to query.
+      responses:
+        '200':
+          description: Returns the address content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/address_content'
+  /addresses/{address}/extended:
+    get:
+      tags:
+        - Cardano » Addresses
+      summary: Get extended information for a specific address
+      operationId: get_address_extended_info
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bech32 address to query.
+      responses:
+        '200':
+          description: Returns the extended address content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/address_content' # The schema is identical to the basic one
+  /addresses/{address}/total:
+    get:
+      tags:
+        - Cardano » Addresses
+      summary: Get total received, sent, and transaction count for an address
+      operationId: get_address_totals
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bech32 address to query.
+      responses:
+        '200':
+          description: Returns the address details including sums and counts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/address_content_total'
+  /addresses/{address}/transactions:
+    get:
+      tags:
+        - Cardano » Addresses
+      summary: Get the transaction history for an address
+      operationId: get_address_transactions
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bech32 address to query.
+        - name: count
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+          description: The number of transactions per page.
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: The page number for listing the results.
+      responses:
+        '200':
+          description: Returns a list of transactions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/address_transactions_content'
+
+components:
+  securitySchemes:
+    project_id:
+      type: apiKey
+      in: header
+      name: project_id
+  schemas:
+    address_content:
+      type: object
+      properties:
+        address: { type: string }
+        amount:
+          type: array
+          items:
+            type: object
+            properties:
+              unit: { type: string }
+              quantity: { type: string }
+              decimals: { type: integer, nullable: true }
+              has_nft_onchain_metadata: { type: boolean }
+        stake_address: { type: string, nullable: true }
+        type: { type: string, enum: [byron, shelley] }
+        script: { type: boolean }
+    address_content_total:
+      type: object
+      properties:
+        address: { type: string }
+        received_sum:
+          type: array
+          items:
+            type: object
+            properties: { unit: { type: string }, quantity: { type: string } }
+        sent_sum:
+          type: array
+          items:
+            type: object
+            properties: { unit: { type: string }, quantity: { type: string } }
+        tx_count: { type: integer }
+    address_transactions_content:
+      type: array
+      items:
+        type: object
+        properties:
+          tx_hash: { type: string }
+          tx_index: { type: integer }
+          block_height: { type: integer }
+          block_time: { type: integer }

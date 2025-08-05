@@ -1,0 +1,12 @@
+[project]
+name = "mcp-blockfrost"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.60.0",
+    "fastmcp>=2.11.1",
+    "httpx>=0.28.1",
+    "pyyaml>=6.0.2",
+]
