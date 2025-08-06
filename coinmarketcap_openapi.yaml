@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: CoinMarketCap API v2
+  description: Get the latest market quote for one or more cryptocurrencies.
+  version: "2.0.0"
+servers:
+  - url: 'https://pro-api.coinmarketcap.com'
+security:
+  - cmc_api_key: []
+paths:
+  /v2/cryptocurrency/quotes/latest:
+    get:
+      summary: "Get latest cryptocurrency quotes"
+      description: "Returns the latest market quote for 1 or more cryptocurrencies."
+      operationId: get_latest_crypto_quotes
+      parameters:
+        - name: symbol
+          in: query
+          description: "One or more comma-separated cryptocurrency symbols (e.g., 'BTC,ADA')."
+          required: true
+          schema:
+            type: string
+        - name: convert
+          in: query
+          description: "An optional comma-separated list of fiat currency symbols to convert to."
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Successful response with quote data."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      timestamp: { type: string, format: date-time }
+                      error_code: { type: integer }
+                      elapsed: { type: integer }
+                      credit_count: { type: integer }
+                  data:
+                    type: object
+                    additionalProperties:
+                      # --- THIS IS THE FIX ---
+                      # The value for each symbol (e.g., "ADA") is an ARRAY...
+                      type: array
+                      # ...and the ITEMS in that array are objects with the following properties.
+                      items:
+                        type: object
+                        properties:
+                          id: { type: integer }
+                          name: { type: string }
+                          symbol: { type: string }
+                          slug: { type: string }
+                          quote:
+                            type: object
+                            additionalProperties:
+                              type: object
+                              properties:
+                                price: { type: number }
+                                volume_24h: { type: number }
+                                percent_change_1h: { type: number }
+                                percent_change_24h: { type: number }
+                                market_cap: { type: number }
+                                last_updated: { type: string, format: date-time }
+components:
+  securitySchemes:
+    cmc_api_key:
+      type: apiKey
+      in: header
+      name: X-CMC_PRO_API_KEY
